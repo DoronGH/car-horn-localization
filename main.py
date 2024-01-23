@@ -1,16 +1,81 @@
-# This is a sample Python script.
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import os
+import numpy as np
+from pydub import AudioSegment
+import matplotlib.pyplot as plt
+from scipy.io.wavfile import read
+from horn_detector import *
+
+def read_mp3_folder_np(folder_path):
+    try:
+        # Initialize a list to store data and sample rate for each file
+        mp3_data_list = []
+
+        # Loop through all files in the folder
+        for filename in os.listdir(folder_path):
+
+            file_path = os.path.join(folder_path, filename)
+
+            if filename.endswith(".mp3"):
+
+                # Load the MP3 file
+                audio = AudioSegment.from_file(file_path, format="mp3")
+
+                # Extract the raw audio data and sample rate
+                data = np.array(audio.get_array_of_samples())
+                sample_rate = audio.frame_rate
+
+                # Append data and sample rate to the list
+                mp3_data_list.append((data, sample_rate))
+
+            elif filename.endswith(".wav"):
+
+                # Extract the raw audio data and sample rate
+                sample_rate, data = read(file_path)
+
+                # Append data and sample rate to the list
+                mp3_data_list.append((data, sample_rate))
+
+        return mp3_data_list
+    except Exception as e:
+        print(f"Error reading MP3 files from folder: {e}")
+        return None
 
 
-def print_hi(name): # this is an attempt
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def plot_fft(signal, sample_rate):
+    # Apply FFT to the signal
+    fft_result = np.fft.fft(signal)
+
+    # Calculate the frequency values corresponding to the FFT result
+    freq_values = np.fft.fftfreq(len(signal), 1 / sample_rate)
+
+    # Shift the zero frequency component to the center
+    fft_result_shifted = np.fft.fftshift(fft_result)
+    freq_values_shifted = np.fft.fftshift(freq_values)
+
+    # Plot the magnitude spectrum
+    plt.figure(figsize=(10, 6))
+    plt.plot(freq_values_shifted, np.abs(fft_result_shifted))
+    plt.title('FFT')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Magnitude')
+    plt.grid(True)
+    plt.xlim([0, 2000])
+    plt.show()
+
+    return [fft_result_shifted, freq_values_shifted]
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm') # hi
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+# Example usage
+folder_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\horn samples cutted"
+mp3_data_list = read_mp3_folder_np(folder_path)
+
+if mp3_data_list:
+    for i, (raw_data, sample_rate) in enumerate(mp3_data_list):
+        print(horn_detect(raw_data, sample_rate))
+        print("\n")
+        plot_fft(raw_data, sample_rate)
+
+else:
+    print("Failed to read MP3 files from the folder.")
