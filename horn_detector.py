@@ -53,7 +53,7 @@ def horn_detect(signal, sample_rate):
     signal_energy = compute_energy(signal)
     if signal_energy >= ENERGY_THRESHOLD:
         filtered_signal = nr.reduce_noise(y=signal, sr=sample_rate)
-        fourier_signal = np.fft.fft(signal)
+        fourier_signal = np.fft.fft(filtered_signal)
         fourier_signal_energy = compute_energy(fourier_signal)
         strong_freqs_energy = compute_strong_freqs_energy(fourier_signal, sample_rate)
         if strong_freqs_energy / fourier_signal_energy >= MIN_RATIO:
