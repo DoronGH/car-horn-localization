@@ -1,10 +1,9 @@
 
 import os
-import numpy as np
 from pydub import AudioSegment
 import matplotlib.pyplot as plt
-from scipy.io.wavfile import read
 from horn_detector import *
+
 
 def read_mp3_folder_np(folder_path):
     try:
@@ -28,13 +27,8 @@ def read_mp3_folder_np(folder_path):
                 # Append data and sample rate to the list
                 mp3_data_list.append((data, sample_rate))
 
-            elif filename.endswith(".wav"):
-
-                # Extract the raw audio data and sample rate
-                sample_rate, data = read(file_path)
-
-                # Append data and sample rate to the list
-                mp3_data_list.append((data, sample_rate))
+                print(f"{filename}: ")
+                horn_detect(data, sample_rate)
 
         return mp3_data_list
     except Exception as e:
@@ -60,7 +54,6 @@ def plot_fft(signal, sample_rate):
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Magnitude')
     plt.grid(True)
-    plt.xlim([0, 2000])
     plt.show()
 
     return [fft_result_shifted, freq_values_shifted]
@@ -68,14 +61,5 @@ def plot_fft(signal, sample_rate):
 
 
 # Example usage
-folder_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\horn samples cutted"
+folder_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\other sounds"
 mp3_data_list = read_mp3_folder_np(folder_path)
-
-if mp3_data_list:
-    for i, (raw_data, sample_rate) in enumerate(mp3_data_list):
-        print(horn_detect(raw_data, sample_rate))
-        print("\n")
-        plot_fft(raw_data, sample_rate)
-
-else:
-    print("Failed to read MP3 files from the folder.")
