@@ -29,10 +29,20 @@ def read_mp3_folder_np(folder_path):
 
             if filename.endswith(".mp3"):
 
-                mp3_data_list.append(read_mp3(file_path))
+                # Load the MP3 file
+                audio = AudioSegment.from_file(file_path, format="mp3")
+
+                # Extract the raw audio data and sample rate
+                data = np.array(audio.get_array_of_samples())
+                sample_rate = audio.frame_rate
+
+                # Append data and sample rate to the list
+                mp3_data_list.append((data, sample_rate))
+
+                print(f"{filename}: ")
+                horn_detect(data, sample_rate)
 
         return mp3_data_list
-
     except Exception as e:
         print(f"Error reading MP3 files from folder: {e}")
         return None
@@ -64,5 +74,8 @@ def plot_fft(signal, sample_rate):
 
 
 # Example usage
-# folder_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\other sounds"
+folder_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording\Horns without noise.mp3"
 # mp3_data_list = read_mp3_folder_np(folder_path)
+data, sample_rate = read_mp3(folder_path)
+audio_list = split_audio_array(data, sample_rate//2)
+print(audio_list[0])

@@ -61,3 +61,10 @@ def horn_detect(signal, sample_rate):
             return True
     return False
 
+
+def split_audio_array(audio_array, n):
+    subarrays = []
+    for i in range(0, len(audio_array), n):
+        subarray = audio_array[i:i + n]
+        subarrays.append(subarray)
+    return subarrays
