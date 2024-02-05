@@ -1,4 +1,3 @@
-
 import numpy as np
 import noisereduce as nr
 import torch
@@ -68,3 +67,10 @@ def split_audio_array(audio_array, n):
         subarray = audio_array[i:i + n]
         subarrays.append(subarray)
     return subarrays
+
+
+def detection_times(audio_array, samle_rate, sample_length):
+    subarrays = split_audio_array(audio_array, sample_length)
+    detections = []
+    for array in subarrays:
+        detections.append(horn_detect(array))
