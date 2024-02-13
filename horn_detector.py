@@ -74,3 +74,4 @@ def detection_times(audio_array, samle_rate, sample_length):
     detections = []
     for array in subarrays:
         detections.append(horn_detect(array))
+    return detections
