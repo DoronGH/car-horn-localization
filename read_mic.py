@@ -197,6 +197,7 @@ def start_recording(mic_indices, duration, file_path):
     for t in threads:
         t.join()
 
+
 # Example usage
 mic_indices = [1, 2, 4]  # Replace with your actual microphone indices
 duration = 10  # Record for 5 seconds
