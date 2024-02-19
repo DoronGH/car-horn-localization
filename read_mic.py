@@ -200,6 +200,6 @@ def start_recording(mic_indices, duration, file_path):
 
 # Example usage
 mic_indices = [1, 2, 4]  # Replace with your actual microphone indices
-duration = 10  # Record for 5 seconds
-file_path = rf"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output.wav"  # Base file path for recordings
+duration = 5  # Record for 5 seconds
+file_path = rf"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_c.wav"  # Base file path for recordings
 start_recording(mic_indices, duration, file_path)
