@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 from scipy.io import wavfile
 
@@ -37,6 +38,7 @@ def calculate_delay(signal1, signal2, fs):
 
     # Compute the cross-correlation between the two signals
     correlation = np.correlate(signal1, signal2, "same")
+    correlation = scipy.signal.correlate(signal1, signal2, "same")
 
     # Find the index of the maximum correlation value
     max_corr_index = np.argmax(correlation)
@@ -46,6 +48,50 @@ def calculate_delay(signal1, signal2, fs):
 
     # Convert the delay from samples to seconds
     delay_seconds = delay_samples / fs
+
+    return delay_seconds
+
+import matplotlib.pyplot as plt
+
+def calculate_signal_delay(signal1, signal2, fs):
+    """
+    Calculate the delay between two signals using cross-correlation.
+
+    Parameters:
+    - signal1: The first signal (numpy array).
+    - signal2: The second signal (numpy array), should be of the same length as signal1 for accurate results.
+    - fs: The sampling rate of the signals in Hz.
+
+    Returns:
+    - delay: The calculated delay between the two signals in seconds. A positive delay means signal2 lags signal1.
+    """
+
+    # Compute the cross-correlation between the two signals
+    # correlation = np.correlate(signal1 - np.mean(signal1), signal2 - np.mean(signal2), mode='full')
+    correlation = scipy.signal.correlate(signal1 - np.mean(signal1), signal2 - np.mean(signal2), mode='full')
+
+
+    # Find the index of the maximum correlation value
+    max_corr_index = np.argmax(correlation)
+
+    # Calculate the lag in samples. The peak of the cross-correlation gives the index of maximum similarity.
+    # Adjusting by the length of signal1 to find the actual lag.
+    lag_samples = max_corr_index - len(signal1) + 1
+
+    # Convert the lag from samples to seconds
+    delay_seconds = lag_samples / fs
+
+    lags = np.arange(-len(signal1) + 1, len(signal2), 1) / fs
+    plt.figure(figsize=(10, 6))
+    plt.plot(lags, correlation)
+    plt.title('Cross-Correlation between Two Signals')
+    plt.xlabel('Lag (seconds)')
+    plt.ylabel('Normalized Cross-Correlation')
+    plt.axvline(x=delay_samples, color='r', linestyle='--', label=f'Max Correlation at {delay_samples:.3f} s')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
 
     return delay_seconds
 
@@ -69,48 +115,22 @@ if __name__ == "__main__":
     # Generate example signals (for demonstration purposes)
     fs = 44100  # Sampling rate in Hz
     frequency = 5  # Frequency of the sine wave in Hz
-    signal1_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_b_mic_1.wav"
-    signal2_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_b_mic_4.wav"
+    signal1_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_c_mic_1.wav"
+    signal2_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_c_mic_2.wav"
+    signal4_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_c_mic_4.wav"
+
     fs, signal1 = read_wav_file(signal1_path)
     _, signal2 = read_wav_file(signal2_path)
-    signal2_new = signal2[22000:66000]
+    _, signal4 = read_wav_file(signal4_path)
+    # signal2_new = signal2[22000:66000]
 
     # modified_signal = np.zeros_like(signal2)
     # modified_signal[start_idx:end_idx] = signal[start_idx:end_idx]
 
     # Calculate the delay
-    calculated_delay = calculate_delay(signal1, signal2_new, fs)
+    calculated_delay = calculate_signal_delay(signal1, signal2, fs)
     print(f"Calculated delay: {calculated_delay} seconds")
     print(fs)
-
-    # import matplotlib.pyplot as plt
-    #
-    # # n_repeats = 100
-    # n = 1000
-    # n_repeats = 1
-    # # Get correlations
-    # t = np.linspace(0, n_repeats, n)
-    # sin_delay = lambda delay: np.sin(2.0 * np.pi * (t - delay))
-    # signal1 = sin_delay(delay=0)
-    # signal2 = sin_delay(delay=x)
-    # corr11 = signal.correlate(signal1, signal1, mode='full')
-    # corr12 = signal.correlate(signal1, signal2, mode='full')
-    # a1 = np.argmax(corr11)
-    # a2 = np.argmax(corr12)
-    # # Print output
-    # print(a1, a2, x, n_repeats * (a1 - a2) / n)
-    # # Make plots
-    # plt.figure()
-    # plt.plot(signal1, "r")
-    # plt.plot(signal2, "b")
-    # plt.title("Signals, delay = {:.3f}".format(x))
-    # plt.legend(["Original signal", "Delayed signal"], loc="upper right")
-    # plt.grid(True)
-    # plt.savefig("Signals")
-    # plt.figure()
-    # plt.plot(corr11, "r")
-    # plt.plot(corr12, "b")
-    # plt.title("Correlations, delay = {:.3f}".format(x))
-    # plt.legend(["Auto-correlation", "Cross-correlation"], loc="upper right")
-    # plt.grid(True)
-    # plt.savefig("Correlations")
+    calculated_delay = calculate_signal_delay(signal1, signal4, fs)
+    print(f"Calculated delay: {calculated_delay} seconds")
+    print(fs)
