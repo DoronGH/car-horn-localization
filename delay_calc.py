@@ -68,30 +68,26 @@ def calculate_signal_delay(signal1, signal2, fs):
 
     # Compute the cross-correlation between the two signals
     # correlation = np.correlate(signal1 - np.mean(signal1), signal2 - np.mean(signal2), mode='full')
-    correlation = scipy.signal.correlate(signal1 - np.mean(signal1), signal2 - np.mean(signal2), mode='full')
-
-
+    correlation = scipy.signal.correlate(signal1 - np.mean(signal1), signal2 - np.mean(signal2), mode='valid')
+    # correlation = scipy.signal.correlate(signal1, signal2, mode='valid')
     # Find the index of the maximum correlation value
     max_corr_index = np.argmax(correlation)
 
     # Calculate the lag in samples. The peak of the cross-correlation gives the index of maximum similarity.
     # Adjusting by the length of signal1 to find the actual lag.
-    lag_samples = max_corr_index - len(signal1) + 1
+    # lag_samples = max_corr_index - len(signal1) + 1
+
+    lag_samples = max_corr_index - len(correlation)//2
 
     # Convert the lag from samples to seconds
     delay_seconds = lag_samples / fs
-
-    lags = np.arange(-len(signal1) + 1, len(signal2), 1) / fs
-    plt.figure(figsize=(10, 6))
-    plt.plot(lags, correlation)
-    plt.title('Cross-Correlation between Two Signals')
-    plt.xlabel('Lag (seconds)')
-    plt.ylabel('Normalized Cross-Correlation')
-    plt.axvline(x=delay_samples, color='r', linestyle='--', label=f'Max Correlation at {delay_samples:.3f} s')
-    plt.legend()
+    print("signal1.shape: ", signal1.shape)
+    print("signal2.shape: ", signal2.shape)
+    print("correlation.shape: ", correlation.shape)
+    plt.figure()
+    plt.plot(correlation)
     plt.grid(True)
     plt.show()
-
 
     return delay_seconds
 
@@ -115,22 +111,40 @@ if __name__ == "__main__":
     # Generate example signals (for demonstration purposes)
     fs = 44100  # Sampling rate in Hz
     frequency = 5  # Frequency of the sine wave in Hz
-    signal1_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_c_mic_1.wav"
-    signal2_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_c_mic_2.wav"
-    signal4_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_c_mic_4.wav"
+    signal1_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_h_mic_1.wav"
+    signal2_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_h_mic_2.wav"
+    signal4_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_h_mic_4.wav"
 
     fs, signal1 = read_wav_file(signal1_path)
     _, signal2 = read_wav_file(signal2_path)
     _, signal4 = read_wav_file(signal4_path)
-    # signal2_new = signal2[22000:66000]
+    add_delay = 0
+    start_time_arr = range(0,15,3)
+    delay_1_2 = []
+    delay_1_4 = []
+    for start_time in start_time_arr:
+        signal1_new = signal1[start_time * fs: (start_time + 5) * fs]
+        signal2_new = signal2[int((start_time + 1.5 + add_delay) * fs): int((start_time + 3.5 + add_delay) * fs)]
+        signal4_new = signal4[int((start_time + 1.5 + add_delay) * fs): int((start_time + 3.5 + add_delay) * fs)]
 
-    # modified_signal = np.zeros_like(signal2)
-    # modified_signal[start_idx:end_idx] = signal[start_idx:end_idx]
+        # Calculate the delay
+        calculated_delay = calculate_signal_delay(signal1_new, signal2_new, fs)
+        delay_1_2.append(calculated_delay)
+        # print(f"Calculated delay: {calculated_delay} seconds")
+        calculated_delay = calculate_signal_delay(signal1_new, signal4_new, fs)
+        delay_1_4.append(calculated_delay)
+        # print(f"Calculated delay: {calculated_delay} seconds")
 
-    # Calculate the delay
-    calculated_delay = calculate_signal_delay(signal1, signal2, fs)
-    print(f"Calculated delay: {calculated_delay} seconds")
-    print(fs)
-    calculated_delay = calculate_signal_delay(signal1, signal4, fs)
-    print(f"Calculated delay: {calculated_delay} seconds")
-    print(fs)
+    print(delay_1_2)
+    print(delay_1_4)
+
+    """
+    Calculated delay: -0.0006575963718820862 seconds
+    44100
+    Calculated delay: -0.0014285714285714286 seconds
+    
+    
+    3-6
+    Calculated delay: 0.0014965986394557824 seconds
+    Calculated delay: 0.0008616780045351474 seconds
+    """
