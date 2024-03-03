@@ -92,6 +92,14 @@ def calculate_signal_delay(signal1, signal2, fs):
     return delay_seconds
 
 
+from pydub import AudioSegment
+
+
+def read_m4a(file_path):
+    audio = AudioSegment.from_file(file_path, format="m4a")
+    return audio
+
+
 # Example usage:
 if __name__ == "__main__":
 

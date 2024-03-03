@@ -198,9 +198,75 @@ def start_recording(mic_indices, duration, file_path):
         t.join()
 
 
-# Example usage
-mic_indices = [1, 2, 4]
-duration = 20
-file_path = rf"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_h.wav"
-start_recording(mic_indices, duration, file_path)
+import pyaudio
+import wave
+import numpy as np
 
+
+def record_audio(mic_index, duration, file_path):
+    """
+    Records audio from the stereo microphone at `mic_index` for `duration` seconds,
+    and saves the left and right channels to separate files.
+    """
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 2  # Set to 2 for stereo recording
+    RATE = 44100
+    CHUNK = 1024
+
+    p = pyaudio.PyAudio()
+
+    # Open stream
+    stream = p.open(format=FORMAT,
+                    channels=CHANNELS,
+                    rate=RATE,
+                    input=True,
+                    input_device_index=mic_index,
+                    frames_per_buffer=CHUNK)
+
+    print(f"Recording from device index {mic_index} for {duration} seconds...")
+
+    frames = []
+
+    for _ in range(0, int(RATE / CHUNK * duration)):
+        data = stream.read(CHUNK, exception_on_overflow=False)
+        frames.append(data)
+
+    # Stop and close the stream
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+    # Convert frames to numpy array
+    numpydata = np.frombuffer(b''.join(frames), dtype=np.int16)
+
+    # Separate left and right channels
+    left_channel = numpydata[::2]
+    right_channel = numpydata[1::2]
+
+    # Function to save a channel's data to a WAV file
+    def save_channel(data, channel_name):
+        modified_file_path = f"{file_path.rstrip('.wav')}_{channel_name}_mic_{mic_index}.wav"
+        with wave.open(modified_file_path, 'wb') as wf:
+            wf.setnchannels(1)  # Mono
+            wf.setsampwidth(p.get_sample_size(FORMAT))
+            wf.setframerate(RATE)
+            wf.writeframes(data.tobytes())
+        print(f"Recording from device index {mic_index} ({channel_name} channel) saved to {modified_file_path}")
+
+    # Save left and right channel
+    save_channel(left_channel, "left")
+    save_channel(right_channel, "right")
+
+
+
+
+
+# Example usage
+# out: 7, 15
+mic_indices = [1]
+duration = 10
+file_path = rf"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\sound_card.wav"
+# start_recording(mic_indices, duration, file_path)
+#
+# Example usage
+record_audio(mic_index=1, duration=10, file_path=file_path)
