@@ -1,15 +1,16 @@
 import numpy as np
 import noisereduce as nr
-import torch
 from matplotlib import pyplot as plt
 
 F_MIN = 500
 F_MAX = 5000
 MAX_FREQ_NUM = 20
 ENERGY_THRESHOLD = 0
-MIN_RATIO = 0.05
+MIN_RATIO = 0.1
 TOP_VAL_RATIO = 2500
 
+
+# TESTING FUNCTIONS #
 
 def plot_fft(signal, sample_rate, i, ratio):
     # Apply FFT to the signal
@@ -36,13 +37,47 @@ def plot_fft(signal, sample_rate, i, ratio):
     return [fft_result_shifted, freq_values_shifted]
 
 
+def plot_energy_and_ratio(x, energy, ratio):
+    """
+    Plot three arrays: x, energy, and ratio.
+
+    Parameters:
+    - x: Array representing the x-axis values.
+    - energy: Array representing the energy (y-axis) values.
+    - ratio: Array representing the ratio (y-axis) values.
+
+    Returns:
+    - None (displays the plot).
+    """
+    plt.figure(figsize=(10, 6))
+
+    # Plot energy
+    plt.subplot(2, 1, 1)
+    plt.plot(x, energy, label='Energy')
+    plt.title('Energy Plot')
+    plt.xlabel('X-axis')
+    plt.ylabel('Energy')
+
+    # Plot ratio
+    plt.subplot(2, 1, 2)
+    plt.plot(x, ratio, "*", label='Ratio')
+    plt.title('Ratio Plot')
+    plt.xlabel('X-axis')
+    plt.ylabel('Ratio')
+
+    plt.tight_layout()
+    plt.show()
+
+
+# DETECTION FUNCTIONS #
+
 def compute_energy(signal):
     """
     Computes the energy of a signal
     :param signal: the signal
     :return: the energy of the signal
     """
-    energy = np.sum(np.abs(signal)**2)
+    energy = np.sum(np.abs(signal) ** 2)
     return energy
 
 
@@ -78,47 +113,6 @@ def split_audio_array(signal, n):
     return sub_arrays
 
 
-def detect_horn(signal, sample_rate):
-    sub_arrays = split_audio_array(signal, sample_rate)
-    detections = []
-    for i, sub_array in enumerate(sub_arrays):
-        ratio = horn_classification(sub_array, sample_rate)
-        detections.append(ratio)
-#        plot_fft(sub_array, sample_rate, i, ratio)
-    return detections
-
-def plot_energy_and_ratio(x, energy, ratio):
-    """
-    Plot three arrays: x, energy, and ratio.
-
-    Parameters:
-    - x: Array representing the x-axis values.
-    - energy: Array representing the energy (y-axis) values.
-    - ratio: Array representing the ratio (y-axis) values.
-
-    Returns:
-    - None (displays the plot).
-    """
-    plt.figure(figsize=(10, 6))
-
-    # Plot energy
-    plt.subplot(2, 1, 1)
-    plt.plot(x, energy, label='Energy')
-    plt.title('Energy Plot')
-    plt.xlabel('X-axis')
-    plt.ylabel('Energy')
-
-    # Plot ratio
-    plt.subplot(2, 1, 2)
-    plt.plot(x, ratio, "*", label='Ratio')
-    plt.title('Ratio Plot')
-    plt.xlabel('X-axis')
-    plt.ylabel('Ratio')
-
-    plt.tight_layout()
-    plt.show()
-
-
 def horn_classification(signal, sample_rate):
     """
     Detects the presence of a horn-like sound in an audio signal.
@@ -133,3 +127,13 @@ def horn_classification(signal, sample_rate):
     if strong_freqs_energy / fourier_signal_energy >= MIN_RATIO:
         return True
     return False
+
+
+def detect_horn(signal, sample_rate):
+    sub_arrays = split_audio_array(signal, sample_rate)
+    detections = []
+    for i, sub_array in enumerate(sub_arrays):
+        ratio = horn_classification(sub_array, sample_rate)
+        detections.append(ratio)
+    #        plot_fft(sub_array, sample_rate, i, ratio)
+    return detections

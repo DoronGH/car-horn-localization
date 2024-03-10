@@ -1,7 +1,8 @@
 import pyaudio
 import numpy as np
 import threading
-
+import pyaudio
+import wave
 
 p = pyaudio.PyAudio()
 
@@ -62,10 +63,10 @@ for i in range(p.get_device_count()):
 # p.terminate()
 
 
-# import pyaudio
-#
-# p = pyaudio.PyAudio()
-#
+import pyaudio
+
+p = pyaudio.PyAudio()
+
 # print("Available audio devices and their properties:")
 # for i in range(p.get_device_count()):
 #     dev = p.get_device_info_by_index(i)
@@ -132,17 +133,6 @@ def record_audio(mic_index, duration, file_path):
 
     print(f"Recording saved to {file_path}")
 
-# # Example usage
-# mic_index = 4  # Adjust this to the index of your microphone
-# duration = 5  # Record for 5 seconds
-# file_path = rf"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_{mic_index}.wav"  # Save the recording to 'output.wav'
-# record_audio(mic_index, duration, file_path)
-#
-
-
-import pyaudio
-import wave
-import threading
 
 def record_audio(mic_index, duration, file_path):
     """
@@ -187,6 +177,7 @@ def record_audio(mic_index, duration, file_path):
 
     print(f"Recording from device index {mic_index} saved to {modified_file_path}")
 
+
 def start_recording(mic_indices, duration, file_path):
     threads = []
     for index in mic_indices:
@@ -199,8 +190,7 @@ def start_recording(mic_indices, duration, file_path):
 
 
 # Example usage
-mic_indices = [1, 2, 4]
-duration = 20
-file_path = rf"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\output_h.wav"
+mic_indices = [1, 9]  # Replace with your actual microphone indices
+duration = 5  # Record for 5 seconds
+file_path = rf"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\recording attempts\soud_card_test.wav"  # Base file path for recordings
 start_recording(mic_indices, duration, file_path)
-
