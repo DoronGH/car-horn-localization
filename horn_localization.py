@@ -3,9 +3,10 @@ import scipy
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt, correlate
 
+
 SPEED_OF_SOUND = 343.2
-DIST = 2.1
-DELTA = 293
+DIST = 2.3
+HIGH_PASS_CUTOFF = 500
 
 
 def high_pass_filter(signal, sample_rate, cutoff):
@@ -53,9 +54,9 @@ def compute_delay(signal1, signal2, fs, sec):
     samples_delay = (delay_index - len(signal1) + 1)
     time_delay = samples_delay / fs
 
-    print("signal1.shape: ", signal1.shape)
-    print("signal2.shape: ", signal2.shape)
-    print("correlation.shape: ", cross_corr.shape)
+    # print("signal1.shape: ", signal1.shape)
+    # print("signal2.shape: ", signal2.shape)
+    # print("correlation.shape: ", cross_corr.shape)
     plt.figure()
     plt.plot(cross_corr)
     plt.grid(True)
@@ -67,13 +68,16 @@ def compute_delay(signal1, signal2, fs, sec):
 
 
 def compute_angle(time_delay):
-    rad_angle = np.arcsin((SPEED_OF_SOUND * time_delay) / DIST)
+    arg = (SPEED_OF_SOUND * time_delay) / DIST
+    rad_angle = np.arcsin(arg)
     deg_angle = np.rad2deg(rad_angle)
     return deg_angle
 
 
 def localize_horn(signal1, signal2, fs, sec):
-    time_delay = compute_delay(signal1, signal2, fs, sec)
+    filtered_signal1 = high_pass_filter(signal1, fs, HIGH_PASS_CUTOFF)
+    filtered_signal2 = high_pass_filter(signal2, fs, HIGH_PASS_CUTOFF)
+    time_delay = compute_delay(filtered_signal1, filtered_signal2, fs, sec)
     angle = compute_angle(time_delay)
     return angle
 

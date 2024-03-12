@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 from horn_localization import compute_delay, high_pass_filter, localize_horn
 from horn_detector import *
+from syncronizer import sync
 
 
 def read_audio_file(file_path):
@@ -59,16 +60,16 @@ def plot_fft(signal, sample_rate, txt):
 
 
 if __name__ == '__main__':
-    file_d = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\Delayed Recoding\synced_analog_mic_1_d.wav"
-    file_e = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\Delayed Recoding\synced_analog_mic_1_e.wav"
-    data_d, fs = read_audio_file(file_d)
-    data_e, _ = read_audio_file(file_e)
-    detections = detect_horn(data_d, fs)
-    for sec, detection in enumerate(detections):
-        if detection:
-            signal_d = high_pass_filter(data_d[int(sec-2)*fs:int(sec+3)*fs], fs, cutoff=500)
-            signal_e = high_pass_filter(data_e[int(sec-2)*fs:int(sec+3)*fs], fs, cutoff=500)
-            print(f"{sec//60}:{sec%60}")
-            print(localize_horn(signal_d, signal_e, fs, sec))
-
+    file_d = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\Delayed Recoding\12-03\mic_e_2.m4a"
+    file_e = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\Delayed Recoding\12-03\mic_d_2.m4a"
+    signal_d, fs = read_audio_file(file_d)
+    signal_e, _ = read_audio_file(file_e)
+    signal_d = signal_d[::2]
+    signal_e = np.roll(signal_d, -7586)
+    sync(signal_e[8*fs:20*fs], signal_d[8*fs:20*fs], fs)
+    # detections = detect_horn(signal_d, fs)
+    # for sec, detection in enumerate(detections):
+    #     if detection:
+    #         print(f"{sec//60}:{sec%60}")
+    #         print(localize_horn(signal_d[(sec-2)*fs:(sec+3)*fs], signal_e[(sec-2)*fs:(sec+3)*fs], fs, sec))
 
