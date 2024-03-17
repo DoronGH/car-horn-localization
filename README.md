@@ -21,7 +21,7 @@ This repository consists of several Python files crucial to the operation of the
 To run this project, you will need:
 
 1. Python 3.x installed on your system.
-2. The following Python packages: `numpy`, `matplotlib`, `scipy`, `noisereduce`, `pydub`, and `pyaudio`. Install them using pip: pip install numpy matplotlib scipy noisereduce pydub pyaudio
+2. The following Python packages: `numpy`, `matplotlib`, `scipy`, `noisereduce`, `pydub`, and `pyaudio`. Install them using pip: 'pip install numpy matplotlib scipy noisereduce pydub pyaudio'
 
 
 ## Usage
