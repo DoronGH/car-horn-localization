@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 LEN_ANGLE = 95
-TOLERANCE = 15
+TOLERANCE = 20
 
 
 def get_frame_shape(video_path):
@@ -37,12 +37,12 @@ def angle2col(angle, video_path):
     if frame_shape is not None:
         frame_width = frame_shape[1]
 
-        # Check if the angle is out of range
-        if angle < -(LEN_ANGLE / 2):
+        # map the angles inside the tolerance range
+        if angle <= -(LEN_ANGLE / 2):
             return 0
-        if angle > (LEN_ANGLE / 2):
+        if angle >= (LEN_ANGLE / 2):
             return frame_width - 1
 
-        # Map the angle to a column
+        # map the angle to a column
         col = int((angle + LEN_ANGLE / 2) * frame_width / LEN_ANGLE)
         return col

@@ -7,7 +7,7 @@ import easyocr
 import cv2
 
 
-def detect_cars(img): # img: np.array):
+def detect_cars(img):  # img: np.array):
     model = YOLO("yolov8n.pt")  # load a pretrained model (recommended for training)
     results = model.predict(source=img, show=False)
     bounding_boxes = results[0].boxes.cls
@@ -18,7 +18,7 @@ def detect_cars(img): # img: np.array):
             black_image = np.zeros_like(img)
             # black_image[y1:y2, x1:x2] = img[y1:y2, x1:x2]
             black_image[y1:y2, x1:x2] = np.ones_like(img[y1:y2, x1:x2])
-            black_image[y1:y2, x1:x2] = np.ones((y2 - y1, x2 - x1,3))
+            black_image[y1:y2, x1:x2] = np.ones((y2 - y1, x2 - x1, 3))
             cropped_images.append(black_image)
     for i, cropped_image in enumerate(cropped_images):
         plt.imshow(cropped_image)
@@ -45,10 +45,11 @@ def get_license_plate_from_mask(path_for_license_plates):
     filter_predicted_result = "".join(predicted_result.split()).replace(":", "").replace("-", "")
     predicted_license_plates.append(filter_predicted_result)
 
+
 def get_plate_number(img):
     reader = easyocr.Reader(['en'])
     result = reader.readtext(img)
-    plate_numbers= []
+    plate_numbers = []
     for detection in result:
         # print(detection[1], detection[2])
         if detection[2] > 0.1:
@@ -75,9 +76,6 @@ def choose_mask(masks, col, angle_error):
                 top_mask_value = value
         return top_mask
     return None
-
-
-
 
 
 def extract_frames(video_path, start_time, n, m, video_sync_factor=0):
@@ -120,7 +118,7 @@ def extract_frames(video_path, start_time, n, m, video_sync_factor=0):
     return np.array(frames)
 
 
-def find_suspicious_vehicle(video_path, start_time, n, m, col, angle_error, video_sync_factor):
+def find_vehicle(video_path, start_time, n, m, col, angle_error, video_sync_factor=0):
     frames = extract_frames(video_path, start_time, n, m, video_sync_factor)
     res = []
     for frame in frames:
@@ -134,22 +132,15 @@ def find_suspicious_vehicle(video_path, start_time, n, m, col, angle_error, vide
 
 if __name__ == '__main__':
 
-
     # Example usage
     video_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\video3.mp4"
     start_time = '0501'  # Start at 00:43 (mm:ss)
     n = 3  # Number of frames to extract
     m = 10  # Extract every 5th frame
 
-
-    res = find_suspicious_vehicle(video_path, start_time, n, m, 1350, 100, 0)
+    res = find_vehicle(video_path, start_time, n, m, 1350, 100)
     for frame in res:
         plt.imshow(frame)
         plt.axis('off')
         plt.title("Suspicious vehicle")
         plt.show()
-
-
-
-
-
