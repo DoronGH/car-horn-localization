@@ -67,10 +67,6 @@ def main():
                 col = angle2col(angle, VIDEO_PATH)
 
 
-
-
-
-
 if __name__ == '__main__':
     main()
 
