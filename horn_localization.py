@@ -1,12 +1,10 @@
 import numpy as np
-import scipy
-import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt, correlate
 
 
 SPEED_OF_SOUND = 343.2
-DIST = 2.3
-HIGH_PASS_CUTOFF = 500
+DIST = 3.025
+HIGH_PASS_CUTOFF = 3000
 
 
 def high_pass_filter(signal, sample_rate, cutoff):
@@ -22,7 +20,7 @@ def high_pass_filter(signal, sample_rate, cutoff):
     return filtered_signal
 
 
-def compute_delay(signal1, signal2, fs, sec):
+def compute_delay(signal1, signal2, fs):
     """
     Compute the delay between two signals using cross-correlation.
 
@@ -57,12 +55,12 @@ def compute_delay(signal1, signal2, fs, sec):
     # print("signal1.shape: ", signal1.shape)
     # print("signal2.shape: ", signal2.shape)
     # print("correlation.shape: ", cross_corr.shape)
-    plt.figure()
-    plt.plot(cross_corr)
-    plt.grid(True)
-    plt.xlim([mid_index-100000, mid_index+100000])
-    plt.title(f'Time = {sec//60}:{sec%60}')
-    plt.show()
+    # plt.figure()
+    # plt.plot(cross_corr)
+    # plt.grid(True)
+    # plt.xlim([mid_index-1000, mid_index+1000])
+    # plt.title(f'Time = {sec//60}:{sec%60}')
+    # plt.show()
 
     return time_delay
 
@@ -74,10 +72,9 @@ def compute_angle(time_delay):
     return deg_angle
 
 
-def localize_horn(signal1, signal2, fs, sec):
+def localize_horn(signal1, signal2, fs):
     filtered_signal1 = high_pass_filter(signal1, fs, HIGH_PASS_CUTOFF)
     filtered_signal2 = high_pass_filter(signal2, fs, HIGH_PASS_CUTOFF)
-    time_delay = compute_delay(filtered_signal1, filtered_signal2, fs, sec)
+    time_delay = compute_delay(filtered_signal1, filtered_signal2, fs)
     angle = compute_angle(time_delay)
     return angle
-
