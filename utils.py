@@ -3,7 +3,7 @@ import noisereduce as nr
 import numpy as np
 
 
-def plot_fft(signal, sample_rate, i, ratio):
+def plot_fft(signal, sample_rate, i):
     # Apply FFT to the signal
     filtered_signal = nr.reduce_noise(y=signal, sr=sample_rate)
     fft_result = np.fft.fft(filtered_signal)
@@ -18,10 +18,10 @@ def plot_fft(signal, sample_rate, i, ratio):
     # Plot the magnitude spectrum
     plt.figure(figsize=(10, 6))
     plt.plot(freq_values_shifted, np.abs(fft_result_shifted))
-    plt.title(f'FFT, {i}, Ratio = {ratio}')
+    plt.title(f'FFT')
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Magnitude')
-    plt.xlim([0, 2000])
+    plt.xlim([-20000, 20000])
     plt.grid(True)
     plt.show()
 

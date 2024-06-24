@@ -4,7 +4,7 @@ from pydub import AudioSegment
 from scipy.signal import correlate, filtfilt, butter
 from horn_localization import HIGH_PASS_CUTOFF
 
-CORR_LEN = 1
+CORR_LEN = 3
 
 
 def read_audio_file(file_path):
@@ -89,25 +89,26 @@ def compute_delay(signal1, signal2, i):
     return samples_delay
 
 
-def sync(signal1, signal2, fs):
+def sync(signal1, signal2, fs, start):
     filtered_signal1 = high_pass_filter(signal1, fs, HIGH_PASS_CUTOFF)
     filtered_signal2 = high_pass_filter(signal2, fs, HIGH_PASS_CUTOFF)
     time_len = len(signal1) // fs
     range_size = (time_len - CORR_LEN) * 2 + 1
+
     for n in range(range_size):
-        print(f"index: {n}")
+        print(f"time = {start + n * 0.5} sec")
         print(compute_delay(filtered_signal1[int(0.5 * n) * fs:int(CORR_LEN + 0.5 * n) * fs],
                             filtered_signal2[int(0.5 * n) * fs:int(CORR_LEN + 0.5 * n) * fs], n))
 
 
 if __name__ == '__main__':
-    file_d = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\with_video_2_d.m4a"
-    file_e = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\with_video_2_e.aac"
+    file_d = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\with_video_1_d.m4a"
+    file_e = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\with_video_1_e.aac"
     signal_d, fs = read_audio_file(file_d)
     signal_e, _ = read_audio_file(file_e)
-    signal_e = signal_e[2530:]
-    sync_d = signal_d[32*fs:62*fs]
-    sync_e = signal_e[32*fs:62*fs]
-    sync(sync_d, sync_e, fs)
-    # save_as_wav(signal_d, fs, "synced_with_video_2_d.wav")
-    # save_as_wav(signal_e, fs, "synced_with_video_2_e.wav")
+    signal_d = signal_d[624:]
+    sync_d = signal_d[45*fs:75*fs]
+    sync_e = signal_e[45*fs:75*fs]
+    sync(sync_d, sync_e, fs, 45)
+    # save_as_wav(signal_d, fs, "synced_with_video_1_d_50.wav")
+    # save_as_wav(signal_e, fs, "synced_with_video_1_e_50.wav")

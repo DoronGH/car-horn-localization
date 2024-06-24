@@ -3,8 +3,9 @@ from scipy.signal import butter, filtfilt, correlate
 
 
 SPEED_OF_SOUND = 343.2
-DIST = 3.025
+DIST = 3.007
 HIGH_PASS_CUTOFF = 3000
+DELAY_PER_SEC = 0.65
 
 
 def high_pass_filter(signal, sample_rate, cutoff):
@@ -20,7 +21,7 @@ def high_pass_filter(signal, sample_rate, cutoff):
     return filtered_signal
 
 
-def compute_delay(signal1, signal2, fs):
+def compute_delay(signal1, signal2, fs, sync_time, curr_time):
     """
     Compute the delay between two signals using cross-correlation.
 
@@ -46,10 +47,9 @@ def compute_delay(signal1, signal2, fs):
     mid_index = len(cross_corr) // 2 + 1
     delta = int((DIST * fs) / SPEED_OF_SOUND)
     delay_index = np.argmax(cross_corr[mid_index-delta:mid_index+delta]) + mid_index - delta
-    # delay_index = np.argmax(cross_corr)  # used to synchronize signals
 
     # Calculate the delay in seconds
-    samples_delay = (delay_index - len(signal1) + 1)
+    samples_delay = (delay_index - len(signal1) + 1) - int((curr_time - sync_time) * DELAY_PER_SEC)
     time_delay = samples_delay / fs
 
     # print("signal1.shape: ", signal1.shape)
@@ -72,9 +72,9 @@ def compute_angle(time_delay):
     return deg_angle
 
 
-def localize_horn(signal1, signal2, fs):
+def localize_horn(signal1, signal2, fs, sync_time, curr_time):
     filtered_signal1 = high_pass_filter(signal1, fs, HIGH_PASS_CUTOFF)
     filtered_signal2 = high_pass_filter(signal2, fs, HIGH_PASS_CUTOFF)
-    time_delay = compute_delay(filtered_signal1, filtered_signal2, fs)
+    time_delay = compute_delay(filtered_signal1, filtered_signal2, fs, sync_time, curr_time)
     angle = compute_angle(time_delay)
     return angle

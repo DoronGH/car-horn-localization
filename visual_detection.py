@@ -11,7 +11,7 @@ import torch
 def detect_cars(img):  # img: np.array):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = YOLO("yolov8n.pt")
-    print(device)
+    print(f"Device: {device}")
     model.to(device)
     results = model.predict(source=img, show=False)
     bounding_boxes = results[0].boxes.cls

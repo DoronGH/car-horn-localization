@@ -1,19 +1,19 @@
 
-import os
-import sys
 from pydub import AudioSegment
 from angel2col import angle2col
 from horn_localization import localize_horn
 from horn_detector import *
+from utils import plot_fft
 from visual_detection import find_vehicle
 
 MIN_DETECTIONS = 5
 NUM_OF_FRAMES = 3
 FRAME_DIFF = 10
-PIXEL_TOLERANCE = 200
+PIXEL_TOLERANCE = 50
+SYNC_TIME = 50
 
-AUDIO1_PATH = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\synced_with_video_2_d.wav"
-AUDIO2_PATH = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\synced_with_video_2_e.wav"
+AUDIO1_PATH = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\synced_with_video_2_d_40.wav"
+AUDIO2_PATH = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\synced_with_video_2_e_40.wav"
 VIDEO_PATH = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\video2.mp4"
 
 
@@ -34,13 +34,13 @@ def read_audio_file(file_path):
 
 def print_detection(sec):
     if sec // 60 >= 10 and sec % 60 >= 10:
-        print(f"{int(sec // 60)}:{int(sec % 60)}")
+        print(f"Horn Detected! - {int(sec // 60)}:{sec % 60}")
     elif sec // 60 < 10 and sec % 60 >= 10:
-        print(f"0{int(sec // 60)}:{int(sec % 60)}")
+        print(f"Horn Detected! - 0{int(sec // 60)}:{sec % 60}")
     elif sec // 60 >= 10 and sec % 60 < 10:
-        print(f"{int(sec // 60)}:0{int(sec % 60)}")
+        print(f"Horn Detected! - {int(sec // 60)}:0{sec % 60}")
     else:
-        print(f"0{int(sec // 60)}:0{int(sec % 60)}")
+        print(f"Horn Detected! - 0{int(sec // 60)}:0{sec % 60}")
 
 
 def enough_detections(detections):
@@ -54,33 +54,36 @@ def find_angle(audio1, audio2, fs, detections, start):
             sec = start + (half_sec / 2)
             signal1 = audio1[int((sec-0.5)*fs):int((sec+1)*fs)]
             signal2 = audio2[int((sec-0.5)*fs):int((sec+1)*fs)]
-            angle = localize_horn(signal1, signal2, fs)
-            angles.append(angle)
+            angle = localize_horn(signal1, signal2, fs, SYNC_TIME, sec)
+            if not np.isnan(angle):
+                angles.append(angle)
     return np.median(angles)
 
 
 def time_format(sec):
     if sec // 60 >= 10 and sec % 60 >= 10:
-        return f"{int(sec // 60)}{int(sec % 60)}"
+        return f"{int(sec // 60)}{int(sec % 60)}{int(sec * 100) % 100}"
     elif sec // 60 < 10 and sec % 60 >= 10:
-        return f"0{int(sec // 60)}{int(sec % 60)}"
+        return f"0{int(sec // 60)}{int(sec % 60)}{int(sec * 100) % 100}"
     elif sec // 60 >= 10 and sec % 60 < 10:
-        return f"{int(sec // 60)}0{int(sec % 60)}"
+        return f"{int(sec // 60)}0{int(sec % 60)}{int(sec * 100) % 100}"
     else:
-        return f"0{int(sec // 60)}0{int(sec % 60)}"
+        return f"0{int(sec // 60)}0{int(sec % 60)}{int(sec * 100) % 100}"
 
 
-def plot_results(results):
+def plot_results(results, start_time):
     for frame in results:
         plt.imshow(frame)
         plt.axis('off')
-        plt.title("Vehicle detection")
+        plt.title(f"Vehicle Detected\nTime: {start_time[:2]}:{start_time[2:]}")
         plt.show()
 
 
 def main():
     audio1, fs = read_audio_file(AUDIO1_PATH)
     audio2, _ = read_audio_file(AUDIO2_PATH)
+    print("Audio files read successfully")
+    print("Searching for horn...")
     detections = detect_horn(audio1, fs)
     for half_sec, detection in enumerate(detections):
         if detection:
@@ -95,16 +98,8 @@ def main():
                 if col is not None:
                     start_time = time_format(sec)
                     results = find_vehicle(VIDEO_PATH, start_time, NUM_OF_FRAMES, FRAME_DIFF, col, PIXEL_TOLERANCE)
-                    plot_results(results)
+                    plot_results(results, start_time)
 
 
 if __name__ == '__main__':
     main()
-
-
-    # if len(sys.argv) != 4:
-    #     print("Usage: python main.py <audio1_path> <audio2_path> <video_path>")
-    #     sys.exit(1)
-    # audio1_path = sys.argv[1]
-    # audio2_path = sys.argv[2]
-    # video_path = sys.argv[3]
