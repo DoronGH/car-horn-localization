@@ -5,10 +5,14 @@ import pytesseract
 import os
 import easyocr
 import cv2
+import torch
 
 
 def detect_cars(img):  # img: np.array):
-    model = YOLO("yolov8n.pt")  # load a pretrained model (recommended for training)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = YOLO("yolov8n.pt")
+    print(device)
+    model.to(device)
     results = model.predict(source=img, show=False)
     bounding_boxes = results[0].boxes.cls
     cropped_images = []
@@ -81,7 +85,8 @@ def choose_mask(masks, col, angle_error):
 def extract_frames(video_path, start_time, n, m, video_sync_factor=0):
     # Parse the start time
     minutes = int(start_time[:2])
-    seconds = int(start_time[2:])
+    seconds = int(start_time[2:4])
+    tenth_seconds = int(start_time[4:])/10
     start_time_seconds = minutes * 60 + seconds + video_sync_factor
 
     # Open the video file
@@ -91,7 +96,7 @@ def extract_frames(video_path, start_time, n, m, video_sync_factor=0):
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     # Calculate the frame number to start extracting from
-    start_frame = int(start_time_seconds * fps)
+    start_frame = int((start_time_seconds + tenth_seconds) * fps)
 
     # Set the current frame position
     cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
@@ -134,7 +139,7 @@ if __name__ == '__main__':
 
     # Example usage
     video_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\video3.mp4"
-    start_time = '0501'  # Start at 00:43 (mm:ss)
+    start_time = '050105'  # Start at 00:43 (mm:ss:tt)
     n = 3  # Number of frames to extract
     m = 10  # Extract every 5th frame
 
@@ -144,3 +149,6 @@ if __name__ == '__main__':
         plt.axis('off')
         plt.title("Suspicious vehicle")
         plt.show()
+
+
+
