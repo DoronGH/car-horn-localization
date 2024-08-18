@@ -8,10 +8,14 @@ import cv2
 import torch
 
 
-def detect_cars(img):  # img: np.array):
+def detect_cars(img):
+    """
+    Detects cars in an image using a YOLO model.
+    :param img: The image in which to detect cars.
+    :return: A list of cropped images of detected cars.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = YOLO("yolov8n.pt")
-    print(f"Device: {device}")
     model.to(device)
     results = model.predict(source=img, show=False)
     bounding_boxes = results[0].boxes.cls
@@ -27,7 +31,7 @@ def detect_cars(img):  # img: np.array):
     for i, cropped_image in enumerate(cropped_images):
         plt.imshow(cropped_image)
         plt.axis('off')
-        if len(get_plate_number(cropped_image)) > 0:
+        if False:  # len(get_plate_number(cropped_image)) > 0:
             plt.title(get_plate_number(cropped_image)[0])
         else:
             plt.title(i)
@@ -36,6 +40,10 @@ def detect_cars(img):  # img: np.array):
 
 
 def get_license_plate_from_mask(path_for_license_plates):
+    """
+    Extracts the license plate number from an image of a license plate.
+    :param path_for_license_plates: The path to the image of the license plate.
+    """
     # specify path to the license plate images folder as shown below
     list_license_plates = []
     predicted_license_plates = []
@@ -51,6 +59,11 @@ def get_license_plate_from_mask(path_for_license_plates):
 
 
 def get_plate_number(img):
+    """
+    Uses OCR to extract the plate number from an image of a license plate.
+    :param img: The image of the license plate.
+    :return: A list of detected plate numbers.
+    """
     reader = easyocr.Reader(['en'])
     result = reader.readtext(img)
     plate_numbers = []
@@ -62,13 +75,20 @@ def get_plate_number(img):
 
 
 def choose_mask(masks, col, angle_error):
+    """
+    Chooses the best mask from a list of masks based on a specified column and angle error.
+    :param masks: A list of masks.
+    :param col: The specified column.
+    :param angle_error: The specified angle error.
+    :return: The index of the best mask, or None if no suitable mask is found.
+    """
     if len(masks) > 0:
         angle_mask = np.zeros(masks[0].shape)
         angle_mask[:, max(0, col - angle_error): min(angle_mask.shape[1] - 1, col + angle_error)] = 1
 
-        plt.imshow(angle_mask)
-        plt.title("Angle mask")
-        plt.show()
+        # plt.imshow(angle_mask)
+        # plt.title("Angle mask")
+        # plt.show()
 
         top_mask = -1
         top_mask_value = 0
@@ -83,6 +103,15 @@ def choose_mask(masks, col, angle_error):
 
 
 def extract_frames(video_path, start_time, n, m, video_sync_factor=0):
+    """
+    Extracts frames from a video.
+    :param video_path: The path to the video.
+    :param start_time: The start time from which to extract frames.
+    :param n: The number of frames to extract.
+    :param m: The interval between extracted frames.
+    :param video_sync_factor: An optional video sync factor.
+    :return: A numpy array of the extracted frames.
+    """
     # Parse the start time
     minutes = int(start_time[:2])
     seconds = int(start_time[2:4])
@@ -124,6 +153,17 @@ def extract_frames(video_path, start_time, n, m, video_sync_factor=0):
 
 
 def find_vehicle(video_path, start_time, n, m, col, angle_error, video_sync_factor=0):
+    """
+    Finds a vehicle in a video based on specified parameters.
+    :param video_path: The path to the video.
+    :param start_time: The start time from which to find the vehicle.
+    :param n: The number of frames to consider.
+    :param m: The interval between considered frames.
+    :param col: The specified column.
+    :param angle_error: The specified angle error.
+    :param video_sync_factor: An optional video sync factor.
+    :return: A list of images of the detected vehicle.
+    """
     frames = extract_frames(video_path, start_time, n, m, video_sync_factor)
     res = []
     for frame in frames:
@@ -136,7 +176,6 @@ def find_vehicle(video_path, start_time, n, m, col, angle_error, video_sync_fact
 
 
 if __name__ == '__main__':
-
     # Example usage
     video_path = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\video3.mp4"
     start_time = '050105'  # Start at 00:43 (mm:ss:tt)
@@ -149,6 +188,3 @@ if __name__ == '__main__':
         plt.axis('off')
         plt.title("Suspicious vehicle")
         plt.show()
-
-
-

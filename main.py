@@ -1,16 +1,15 @@
-
+from matplotlib import pyplot as plt
 from pydub import AudioSegment
 from angel2col import angle2col
 from horn_localization import localize_horn
 from horn_detector import *
-from utils import plot_fft
 from visual_detection import find_vehicle
 
 MIN_DETECTIONS = 5
 NUM_OF_FRAMES = 3
 FRAME_DIFF = 10
 PIXEL_TOLERANCE = 50
-SYNC_TIME = 50
+SYNC_TIME = 40
 
 AUDIO1_PATH = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\synced_with_video_2_d_40.wav"
 AUDIO2_PATH = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engineering project\with_video\02-06\synced_with_video_2_e_40.wav"
@@ -18,6 +17,11 @@ VIDEO_PATH = r"G:\.shortcut-targets-by-id\1WhfQEk4yh3JFs8tCyjw2UuCdUSe6eKzw\Engi
 
 
 def read_audio_file(file_path):
+    """
+    Reads an audio file and returns the data and sample rate.
+    :param file_path: The path to the audio file.
+    :return: A tuple containing the audio data as a NumPy array and the sample rate.
+    """
     # Read the audio file using pydub
     audio = AudioSegment.from_file(file_path)
 
@@ -33,6 +37,10 @@ def read_audio_file(file_path):
 
 
 def print_detection(sec):
+    """
+    Prints the detection time in a specific format.
+    :param sec: The detection time in seconds.
+    """
     if sec // 60 >= 10 and sec % 60 >= 10:
         print(f"Horn Detected! - {int(sec // 60)}:{sec % 60}")
     elif sec // 60 < 10 and sec % 60 >= 10:
@@ -44,10 +52,24 @@ def print_detection(sec):
 
 
 def enough_detections(detections):
+    """
+    Checks if the number of detections is greater than or equal to the minimum required.
+    :param detections: A list of boolean values indicating the presence of a horn-like sound in each sub-array.
+    :return: True if the number of detections is sufficient, False otherwise.
+    """
     return np.sum(detections) >= MIN_DETECTIONS
 
 
 def find_angle(audio1, audio2, fs, detections, start):
+    """
+    Finds the median angle of arrival of a horn sound based on multiple detections.
+    :param audio1: The first audio signal.
+    :param audio2: The second audio signal.
+    :param fs: The sample rate of the audio signals.
+    :param detections: A list of boolean values indicating the presence of a horn-like sound in each sub-array.
+    :param start: The start time of the detections.
+    :return: The median angle of arrival of the horn sound in degrees.
+    """
     angles = []
     for half_sec, detection in enumerate(detections):
         if detection:
@@ -61,6 +83,11 @@ def find_angle(audio1, audio2, fs, detections, start):
 
 
 def time_format(sec):
+    """
+    Formats a time value in seconds to a specific string format.
+    :param sec: The time value in seconds.
+    :return: The formatted time string.
+    """
     if sec // 60 >= 10 and sec % 60 >= 10:
         return f"{int(sec // 60)}{int(sec % 60)}{int(sec * 100) % 100}"
     elif sec // 60 < 10 and sec % 60 >= 10:
@@ -72,14 +99,23 @@ def time_format(sec):
 
 
 def plot_results(results, start_time):
+    """
+    Plots the results of the vehicle detection.
+    :param results: The results of the vehicle detection.
+    :param start_time: The start time of the detections.
+    """
     for frame in results:
         plt.imshow(frame)
         plt.axis('off')
-        plt.title(f"Vehicle Detected\nTime: {start_time[:2]}:{start_time[2:]}")
+        plt.title(f"Vehicle Detected\nTime: {start_time[:2]}:{start_time[2:4]}.{start_time[4]}")
         plt.show()
 
 
 def main():
+    """
+    The main function of the script. It reads the audio files, detects the horn sounds, localizes the horn, and plots
+    the results.
+    """
     audio1, fs = read_audio_file(AUDIO1_PATH)
     audio2, _ = read_audio_file(AUDIO2_PATH)
     print("Audio files read successfully")

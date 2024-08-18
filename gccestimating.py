@@ -16,7 +16,6 @@ from dataclasses import dataclass as _dataclass
 import numpy as _np
 
 
-
 class GCC(object):
     """Returns a GCC instance.
 
@@ -108,21 +107,21 @@ class GCC(object):
         """
         instance = cls()
         length1 = len(spec1)
-        
+
         if len(spec2) != length1:
             raise ValueError('Spectra must be of same dimension.')
-        
+
         instance._spec1 = spec1
         instance._spec2 = spec2
 
         if onesided:
-            instance._fftlen = 2*length1-2 if length1%2 else 2*length1-1 
+            instance._fftlen = 2 * length1 - 2 if length1 % 2 else 2 * length1 - 1
             instance._fft = _np.fft.rfft
-            instance._ifft = _np.fft.irfft 
+            instance._ifft = _np.fft.irfft
         else:
             instance._fftlen = length1
             instance._fft = _np.fft.fft
-            instance._ifft = _np.fft.ifft 
+            instance._ifft = _np.fft.ifft
         instance._corrlen = instance._fftlen - 1
         return instance
 
@@ -167,24 +166,24 @@ class GCC(object):
 
     def _from_signals(self, sig1, sig2, fftlen=None):
         corrlen = len(sig1) + len(sig2) - 1
-        fftlen = fftlen or int(2**_np.ceil(_np.log2(corrlen)))
+        fftlen = fftlen or int(2 ** _np.ceil(_np.log2(corrlen)))
         fft, ifft = _get_fftfuncs(sig1, sig2)
         spec1 = fft(sig1, fftlen)
         spec2 = fft(sig2, fftlen)
         self._corrlen = corrlen
         self._fftlen = fftlen
-        self._fft = fft  
+        self._fft = fft
         self._ifft = ifft
         self._sig1 = sig1
-        self._sig2 = sig2   
+        self._sig2 = sig2
         self._spec1 = spec1
-        self._spec2 = spec2   
+        self._spec2 = spec2
 
     def _backtransform(self, spec):
         sig = self._ifft(spec, self._fftlen)
-        sig = _np.roll(sig, len(sig)//2)
-        start = (len(sig)-self._corrlen)//2 + 1
-        return sig[start:start+self._corrlen]
+        sig = _np.roll(sig, len(sig) // 2)
+        start = (len(sig) - self._corrlen) // 2 + 1
+        return sig[start:start + self._corrlen]
 
     @property
     def spec11(self):
@@ -204,12 +203,11 @@ class GCC(object):
     def spec12(self):
         """Returns cross power spectrum of first and second signal."""
         if self._spec12 is None:
-            self._spec12 = self._spec1*_np.conj(self._spec2)
+            self._spec12 = self._spec1 * _np.conj(self._spec2)
         return self._spec12
 
-
     @_dataclass(init=True, repr=True, eq=True)
-    class Estimate():
+    class Estimate:
         """Data of an Estimate. 
         Instances are returned by estimators in GCC.
         
@@ -237,7 +235,7 @@ class GCC(object):
             return len(self.sig)
 
         def index_to_lag(self, index, samplerate=None):
-            lag = (index - len(self.sig)//2) 
+            lag = (index - len(self.sig) // 2)
             if samplerate:
                 lag /= samplerate
             return lag
@@ -247,11 +245,11 @@ class GCC(object):
         
         $\\mathcal{F}^{-1} (S_{xy})$
         
-        """         
+        """
         if self._cc is None:
             self._cc = GCC.Estimate(
-                name='CC', 
-                sig=self._backtransform(self.spec12), 
+                name='CC',
+                sig=self._backtransform(self.spec12),
                 spec=self.spec12)
 
         return self._cc
@@ -265,8 +263,8 @@ class GCC(object):
         if self._roth is None:
             spec = self.spec12 / _prevent_zerodivision(self.spec11)
             self._roth = GCC.Estimate(
-                name='Roth', 
-                sig=self._backtransform(spec), 
+                name='Roth',
+                sig=self._backtransform(spec),
                 spec=spec)
         return self._roth
 
@@ -277,25 +275,25 @@ class GCC(object):
     
         $\\mathcal{F}^{-1} (S_{xy}/\\sqrt{S_{xx}S_{yy}})$
         
-        """        
+        """
         if self._scot is None:
             spec = self.gamma12()
             self._scot = GCC.Estimate(
-                name='SCOT', 
-                sig=self._backtransform(spec), 
+                name='SCOT',
+                sig=self._backtransform(spec),
                 spec=spec)
         return self._scot
-        
+
     def gamma12(self):
         """Returns gamma12 $\\gamma_{12}(f)$"""
         if self._gamma12 is None:
             self._gamma12 = self.spec12 / _prevent_zerodivision(
-                _np.sqrt(self.spec11*self.spec22))
+                _np.sqrt(self.spec11 * self.spec22))
         return self._gamma12
 
     def coherence(self):
         """Returns the coherence."""
-        return self.gamma12()**2
+        return self.gamma12() ** 2
 
     def phat(self):
         """Returns GCC PHAT estimate 
@@ -304,12 +302,12 @@ class GCC(object):
         
         $\\mathcal{F}^{-1}(S_{xy}/|S_{xy}|)$
         
-        """        
+        """
         if self._phat is None:
             spec = self.spec12 / _prevent_zerodivision(_np.abs(self.spec12))
             self._phat = GCC.Estimate(
-                name='PHAT', 
-                sig=self._backtransform(spec), 
+                name='PHAT',
+                sig=self._backtransform(spec),
                 spec=spec)
         return self._phat
 
@@ -338,26 +336,26 @@ class GCC(object):
             spec_sig0 = self._fft(sig0, self._fftlen)
             spec_noise1 = self._fft(noise1, self._fftlen)
             spec_noise2 = self._fft(noise2, self._fftlen)
-            spec_sig00 = _np.real(spec_sig0*spec_sig0.conj())
-            spec_noise11 = _np.real(spec_noise1*spec_noise1.conj())
-            spec_noise22 = _np.real(spec_noise2*spec_noise2.conj())
-            weight = spec_sig00 /_prevent_zerodivision(
-                spec_noise11*spec_noise22)
-            spec = self.spec12*weight
+            spec_sig00 = _np.real(spec_sig0 * spec_sig0.conj())
+            spec_noise11 = _np.real(spec_noise1 * spec_noise1.conj())
+            spec_noise22 = _np.real(spec_noise2 * spec_noise2.conj())
+            weight = spec_sig00 / _prevent_zerodivision(
+                spec_noise11 * spec_noise22)
+            spec = self.spec12 * weight
             self._eckart = GCC.Estimate(
-                name='Eckart', 
-                sig=self._backtransform(spec), 
+                name='Eckart',
+                sig=self._backtransform(spec),
                 spec=spec)
         return self._eckart
 
     def ht(self):
         """Returns GCC HT estimate"""
         if self._ht is None:
-            coh = _np.abs(self.gamma12())**2
-            spec = self.spec12*coh/_prevent_zerodivision(_np.abs(self.spec12)*(1-coh))
+            coh = _np.abs(self.gamma12()) ** 2
+            spec = self.spec12 * coh / _prevent_zerodivision(_np.abs(self.spec12) * (1 - coh))
             self._ht = GCC.Estimate(
-                name='HT', 
-                sig=self._backtransform(spec), 
+                name='HT',
+                sig=self._backtransform(spec),
                 spec=spec)
         return self._ht
 
@@ -378,8 +376,8 @@ def corrlags(corrlen, samplerate=1):
     """
     dt = 1 / samplerate
     la = corrlen // 2
-    lb = la+1 if corrlen%2 else la
-    return _np.arange(-la*dt, lb*dt, dt)
+    lb = la + 1 if corrlen % 2 else la
+    return _np.arange(-la * dt, lb * dt, dt)
 
 
 def _get_fftfuncs(*signals):

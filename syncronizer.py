@@ -8,6 +8,11 @@ CORR_LEN = 3
 
 
 def read_audio_file(file_path):
+    """
+    Reads an audio file and returns the data and sample rate.
+    :param file_path: The path to the audio file.
+    :return: A tuple containing the audio data as a NumPy array and the sample rate.
+    """
     # Read the audio file using pydub
     audio = AudioSegment.from_file(file_path)
 
@@ -23,6 +28,12 @@ def read_audio_file(file_path):
 
 
 def save_as_wav(audio_data, sample_rate, output_file):
+    """
+    Saves the audio data as a WAV file.
+    :param audio_data: The audio data as a NumPy array.
+    :param sample_rate: The sample rate of the audio data.
+    :param output_file: The path to the output file.
+    """
     # Create an AudioSegment from the NumPy array
     audio = AudioSegment(
         audio_data.tobytes(),
@@ -36,6 +47,13 @@ def save_as_wav(audio_data, sample_rate, output_file):
 
 
 def high_pass_filter(signal, sample_rate, cutoff):
+    """
+    Apply a high-pass filter to an audio signal.
+    :param signal: NumPy array, the audio signal
+    :param sample_rate: float, the sample rate of the audio signal
+    :param cutoff: float, the cutoff frequency for the high-pass filter
+    :return: filtered_signal: NumPy array, the filtered audio signal
+    """
     nyquist = 0.5 * sample_rate
     normal_cutoff = cutoff / nyquist
 
@@ -51,14 +69,10 @@ def high_pass_filter(signal, sample_rate, cutoff):
 def compute_delay(signal1, signal2, i):
     """
     Compute the delay between two signals using cross-correlation.
-
-    Parameters:
-    - signal1: NumPy array, the first signal
-    - signal2: NumPy array, the second signal
-    - fs: float, the sampling frequency of the signals
-
-    Returns:
-    - delay: float, the delay between the two signals in seconds
+    :param signal1: NumPy array, the first signal
+    :param signal2: NumPy array, the second signal
+    :param i: int, the index of the current signal
+    :return: samples_delay: int, the delay between the two signals in samples
     """
     signal1 = signal1.astype(np.float64)
     signal2 = signal2.astype(np.float64)
@@ -90,6 +104,13 @@ def compute_delay(signal1, signal2, i):
 
 
 def sync(signal1, signal2, fs, start):
+    """
+    Synchronize two audio signals. Used for offline synchronization.
+    :param signal1: NumPy array, the first audio signal
+    :param signal2: NumPy array, the second audio signal
+    :param fs: float, the sample rate of the audio signals
+    :param start: float, the start time of the synchronization
+    """
     filtered_signal1 = high_pass_filter(signal1, fs, HIGH_PASS_CUTOFF)
     filtered_signal2 = high_pass_filter(signal2, fs, HIGH_PASS_CUTOFF)
     time_len = len(signal1) // fs

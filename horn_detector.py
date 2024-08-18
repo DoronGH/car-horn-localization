@@ -1,6 +1,5 @@
 import noisereduce as nr
 import numpy as np
-from matplotlib import pyplot as plt
 
 F_MIN = 500
 F_MAX = 5000
@@ -45,6 +44,12 @@ def compute_strong_freqs_energy(fourier_signal, sample_rate):
 
 
 def split_audio_array(signal, n):
+    """
+    Splits an audio signal into sub-arrays.
+    :param signal: The audio signal.
+    :param n: The number of samples in each sub-array.
+    :return: A list of sub-arrays.
+    """
     sub_arrays = []
     for i in range(0, len(signal), n):
         subarray = signal[i:i + n]
@@ -69,10 +74,15 @@ def horn_classification(signal, fs):
 
 
 def detect_horn(signal, fs):
+    """
+    Detects the presence of a horn-like sound in an audio signal by splitting it into sub-arrays and classifying each one.
+    :param signal: The audio signal.
+    :param fs: The sample rate of the audio signal.
+    :return: A list of boolean values indicating the presence of a horn-like sound in each sub-array.
+    """
     sub_arrays = split_audio_array(signal, int(fs / 2))
     detections = []
     for i, sub_array in enumerate(sub_arrays):
         classification = horn_classification(sub_array, fs)
         detections.append(classification)
-        # plot_fft(sub_array, fs, i, classification)
     return detections

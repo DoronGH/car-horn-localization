@@ -6,6 +6,11 @@ TOLERANCE = 20
 
 
 def get_frame_shape(video_path):
+    """
+    Get the shape of the first frame in a video file.
+    :param video_path: The path to the video file.
+    :return: The shape of the first frame if successful, None otherwise.
+    """
     # Create a VideoCapture object
     cap = cv2.VideoCapture(video_path)
 
@@ -30,6 +35,12 @@ def get_frame_shape(video_path):
 
 
 def angle2col(angle, video_path):
+    """
+    Map an angle to a column in a video frame.
+    :param angle: The angle in degrees.
+    :param video_path: The path to the video file.
+    :return: The column corresponding to the angle if successful, None otherwise.
+    """
     if np.abs(angle) > (LEN_ANGLE / 2) + TOLERANCE:
         print("Error: Angle out of range")
         return None
