@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 LEN_ANGLE = 95
-TOLERANCE = 20
+TOLERANCE = 5
 
 
 def get_frame_shape(video_path):
